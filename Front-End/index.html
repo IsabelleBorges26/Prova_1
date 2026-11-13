@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gerenciamento de Tarefas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <h1>Gerenciamento de Tarefas</h1>
+        <nav>
+            <a href="usuarios.html">Cadastro de Usuários</a>
+            <a href="tarefas.html">Cadastro de Tarefas</a>
+            <a href="index.html">Gerenciar Tarefas</a>
+        </nav>
+    </header>
+
+    <main>
+        <h2>Tarefas</h2>
+        <div class="quadro">
+            <div class="coluna">
+                <h3>A Fazer</h3>
+                <div id="A_FAZER"></div>
+            </div>
+            <div class="coluna">
+                <h3>Fazendo</h3>
+                <div id="FAZENDO"></div>
+            </div>
+            <div class="coluna">
+                <h3>Pronto</h3>
+                <div id="PRONTO"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const api = 'http://localhost:3000';
+
+        carregarTarefas();
+
+        async function carregarTarefas() {
+            const resposta = await fetch(`${api}/tarefas`);
+            const tarefas = await resposta.json();
+
+            document.getElementById('A_FAZER').innerHTML = '';
+            document.getElementById('FAZENDO').innerHTML = '';
+            document.getElementById('PRONTO').innerHTML = '';
+
+            tarefas.forEach(t => {
+                let prioridade = 'Baixa';
+                if (t.prioridade == 'MEDIA') prioridade = 'Média';
+                if (t.prioridade == 'ALTA') prioridade = 'Alta';
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <p><b>Descrição:</b> ${t.descricao}</p>
+                    <p><b>Setor:</b> ${t.setor}</p>
+                    <p><b>Prioridade:</b> ${prioridade}</p>
+                    <p><b>Vinculado a:</b> ${t.usuario.nome}</p>
+                    <div class="acoes">
+                        <button onclick="editar(${t.id})">Editar</button>
+                        <button onclick="excluir(${t.id})">Excluir</button>
+                    </div>
+                    <div class="acoes">
+                        <select id="status-${t.id}">
+                            <option value="A_FAZER">A Fazer</option>
+                            <option value="FAZENDO">Fazendo</option>
+                            <option value="PRONTO">Pronto</option>
+                        </select>
+                        <button onclick="alterarStatus(${t.id})">Alterar Status</button>
+                    </div>
+                `;
+                document.getElementById(t.status).appendChild(card);
+                document.getElementById(`status-${t.id}`).value = t.status;
+            });
+        }
+
+        function editar(id) {
+            window.location.href = `tarefas.html?id=${id}`;
+        }
+
+        async function excluir(id) {
+            if (confirm('Deseja realmente excluir esta tarefa?')) {
+                await fetch(`${api}/tarefas/${id}`, { method: 'DELETE' });
+                carregarTarefas();
+            }
+        }
+
+        async function alterarStatus(id) {
+            const novoStatus = document.getElementById(`status-${id}`).value;
+            await fetch(`${api}/tarefas/${id}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: novoStatus })
+            });
+            carregarTarefas();
+        }
+    </script>
+</body>
+
+</html>
