@@ -10,7 +10,7 @@ Sistema desenvolvido por **Isabelle Borges** para simular a avaliação SAEP, o 
 
 ## Prints do Sistema
 
-### Gerenciamento de Tarefas (Kanban)
+### Gerenciamento de Tarefas
 ![Gerenciamento de Tarefas](./prints/3.png)
 
 ### Cadastro de Usuários
